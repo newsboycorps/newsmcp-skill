@@ -1,0 +1,32 @@
+# Dependencies and package-manager state
+node_modules/
+.pnpm-store/
+
+# Build and test output
+dist/
+coverage/
+test-results/
+playwright-report/
+*.tgz
+*.log
+
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+
+# Private planning and research
+.private-docs/
+.research/
+.omc/
+
+# Temporary files
+.tmp/
+tmp/
+
+# Editors and operating systems
+.DS_Store
+.idea/
+.vscode/
+.cursor/
+
