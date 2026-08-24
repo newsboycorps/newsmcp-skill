@@ -1,0 +1,11 @@
+{
+  "name": "newsmcp",
+  "version": "0.1.0-beta.0",
+  "description": "Research current and historical news with NewsMCP.",
+  "author": {
+    "name": "Newsboy Corps"
+  },
+  "homepage": "https://newsmcp.news",
+  "repository": "https://github.com/newsboycorps/newsmcp-skills",
+  "license": "MIT"
+}

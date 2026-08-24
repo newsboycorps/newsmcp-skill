@@ -1,0 +1,14 @@
+{
+  "name": "newsmcp-skills",
+  "owner": {
+    "name": "Newsboy Corps"
+  },
+  "description": "NewsMCP skills and authenticated news research tools",
+  "plugins": [
+    {
+      "name": "newsmcp",
+      "source": "./plugins/newsmcp",
+      "description": "NewsMCP research skills and authenticated news tools"
+    }
+  ]
+}
