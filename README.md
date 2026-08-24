@@ -73,8 +73,11 @@ OAuth when prompted.
 ```bash
 pnpm install
 pnpm test
-pnpm pack:check
+pnpm release:check
 ```
 
 The root `skills/` directory is canonical. `pnpm sync:plugins` refreshes the
 plugin copy, and `pnpm check:plugins` rejects release drift.
+
+Release checks run the packed npm artifact twice against a temporary home and
+fake client CLI. They never inspect the developer's real agent configuration.

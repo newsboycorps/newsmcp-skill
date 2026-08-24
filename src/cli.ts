@@ -11,7 +11,6 @@ const HELP = `NewsMCP installer
 
 Usage:
   newsmcp setup --client <codex|claude-code>
-  newsmcp doctor --client <codex|claude-code>
   newsmcp --version
   newsmcp --help
 `;
