@@ -7,6 +7,8 @@ dist/
 coverage/
 test-results/
 playwright-report/
+__pycache__/
+*.py[cod]
 *.tgz
 *.log
 
@@ -29,4 +31,3 @@ tmp/
 .idea/
 .vscode/
 .cursor/
-
