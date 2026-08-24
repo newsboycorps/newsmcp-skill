@@ -1,0 +1,40 @@
+{
+  "name": "@newsboycorps/newsmcp",
+  "version": "0.1.0-beta.0",
+  "description": "Install NewsMCP skills and connect supported agent clients.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "newsmcp": "dist/bin.js"
+  },
+  "files": [
+    "dist/",
+    "skills/*/SKILL.md",
+    "skills/*/references/**/*.md",
+    "skills/*/scripts/*.py",
+    "skills-manifest.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "pnpm@10.33.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "generate:manifest": "node scripts/generate-skill-manifest.mjs",
+    "check:manifest": "node scripts/generate-skill-manifest.mjs --check",
+    "test:node": "pnpm build && node --test tests/node/*.test.mjs",
+    "test:python": "python3 -B -m unittest discover -s tests -p 'test_*.py'",
+    "test": "pnpm test:node && pnpm test:python",
+    "pack:check": "pnpm build && pnpm check:manifest && node scripts/check-package.mjs",
+    "prepack": "pnpm build && pnpm generate:manifest"
+  },
+  "devDependencies": {
+    "@types/node": "22.15.3",
+    "typescript": "5.8.3"
+  }
+}
