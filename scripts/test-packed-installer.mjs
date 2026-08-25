@@ -73,6 +73,10 @@ try {
     path.join(home, ".codex", "skills", "newsmcp-deep-research", "SKILL.md"),
     "utf8",
   );
+  await readFile(
+    path.join(home, ".codex", "skills", "newsmcp-newsletter", "SKILL.md"),
+    "utf8",
+  );
   const receiptSource = await readFile(
     path.join(home, ".codex", ".newsmcp", "installation.json"),
     "utf8",

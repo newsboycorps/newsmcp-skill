@@ -1,7 +1,7 @@
 {
   "name": "newsmcp",
-  "version": "0.1.0-beta.1",
-  "description": "Research current and historical news with NewsMCP.",
+  "version": "0.1.0-beta.2",
+  "description": "Research news and create evidence-backed newsletters with NewsMCP.",
   "author": {
     "name": "Newsboy Corps",
     "url": "https://newsmcp.news"
@@ -18,8 +18,8 @@
   "mcpServers": "./.mcp.json",
   "interface": {
     "displayName": "NewsMCP",
-    "shortDescription": "Evidence-based news research",
-    "longDescription": "Search NewsMCP, read full articles, and produce evidence-based news research.",
+    "shortDescription": "News research and newsletter authoring",
+    "longDescription": "Search NewsMCP, read full articles, and create reviewed evidence-backed newsletters.",
     "developerName": "Newsboy Corps",
     "category": "Research",
     "capabilities": [
@@ -28,7 +28,8 @@
     "websiteURL": "https://newsmcp.news",
     "defaultPrompt": [
       "Research this topic across a bounded date range with NewsMCP.",
-      "Build a cited timeline from full NewsMCP articles."
+      "Build a cited timeline from full NewsMCP articles.",
+      "Create a researched NewsMCP newsletter and stop for approval before publishing."
     ],
     "brandColor": "#278AFF"
   }

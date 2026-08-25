@@ -1,0 +1,13 @@
+interface:
+  display_name: "NewsMCP Newsletter"
+  short_description: "Research-backed NewsMCP newsletter authoring"
+  default_prompt: "Use $newsmcp-newsletter to create a researched NewsMCP newsletter and stop for approval before publishing."
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "newsmcp"
+      description: "Search full news content and create NewsMCP newsletters"
+      transport: "streamable_http"
+      url: "https://mcp.newsmcp.news/mcp"
+policy:
+  allow_implicit_invocation: true

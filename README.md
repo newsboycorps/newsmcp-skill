@@ -2,7 +2,8 @@
 
 Skills and installation tools for using NewsMCP with AI agents.
 They help agents search bounded date ranges, inspect additional pages, read full
-articles, and produce evidence-based results.
+articles, produce evidence-based results, and turn that research into reviewed
+newsletters.
 
 ## Install
 
@@ -26,10 +27,14 @@ the same endpoint under another name is migrated automatically, followed by a
 fresh OAuth login so the current default permissions are applied. Restart the
 selected agent client after setup before using newly installed tools.
 
-## Included skill
+## Included skills
 
 - `newsmcp-deep-research`: Searches news by date range, follows pagination,
   reads full articles, investigates evidence gaps, and produces a cited synthesis.
+- `newsmcp-newsletter`: Uses deep research when new evidence is needed, follows
+  the current NewsMCP theme contract, validates a draft, and requires approval
+  before publishing. Install both skills together because new research is a
+  required prerequisite for research-backed newsletters.
 
 ## Install the skill only
 

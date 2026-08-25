@@ -1,6 +1,6 @@
 {
   "name": "@newsboycorps/newsmcp",
-  "version": "0.1.0-beta.1",
+  "version": "0.1.0-beta.2",
   "description": "Install NewsMCP skills and connect supported agent clients.",
   "license": "MIT",
   "repository": {
@@ -18,6 +18,7 @@
   "files": [
     "dist/",
     "skills/*/SKILL.md",
+    "skills/*/agents/*.yaml",
     "skills/*/references/**/*.md",
     "skills/*/scripts/*.py",
     "skills-manifest.json",

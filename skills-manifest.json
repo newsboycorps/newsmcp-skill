@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "packageVersion": "0.1.0-beta.1",
+  "packageVersion": "0.1.0-beta.2",
   "skills": [
     {
       "name": "newsmcp-deep-research",
@@ -28,6 +28,23 @@
         {
           "path": "SKILL.md",
           "sha256": "a74cc7e0c33b9dc53684f381d3c698379ac98fea5f5858924642951168a9268b"
+        }
+      ]
+    },
+    {
+      "name": "newsmcp-newsletter",
+      "files": [
+        {
+          "path": "agents/openai.yaml",
+          "sha256": "32b1ac0b3d1dc8bccfd567057d78f3f28319cfe730ef6270ee37e24bc4fab3b3"
+        },
+        {
+          "path": "references/quality-gates.md",
+          "sha256": "309705ab4950c2efb2711e5249d9c7eef6c9cf5d38e2e5da202af7ae52009413"
+        },
+        {
+          "path": "SKILL.md",
+          "sha256": "0c92952672c54ff447d96463e7185f6289ba6d03cf8d2093bf1a849be45b16a6"
         }
       ]
     }

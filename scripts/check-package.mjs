@@ -37,6 +37,8 @@ function assertRequiredFiles(files) {
     "package.json",
     "skills-manifest.json",
     "skills/newsmcp-deep-research/SKILL.md",
+    "skills/newsmcp-newsletter/SKILL.md",
+    "skills/newsmcp-newsletter/agents/openai.yaml",
   ]) {
     if (!files.includes(required)) {
       throw new Error(`Package is missing ${required}`);
