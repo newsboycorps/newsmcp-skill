@@ -11,6 +11,12 @@ from typing import Any
 
 
 COMPLETE_STOP_REASONS = {"coverage_satisfied", "diminishing_returns"}
+PAGINATION_STOP_REASONS = {
+    "diminishing_returns",
+    "out_of_scope_results",
+    "tool_failure",
+    "user_boundary",
+}
 
 
 def validate(data: dict[str, Any]) -> list[str]:
@@ -43,20 +49,39 @@ def validate(data: dict[str, Any]) -> list[str]:
         if not isinstance(search, dict):
             errors.append("each search must be an object")
             continue
-        if search.get("page") != 1 or search.get("has_more") is not True:
+        dataset = search.get("dataset")
+        if not isinstance(dataset, str) or not dataset.strip():
+            errors.append("each search requires an explicit dataset")
+        filters = search.get("filters", {})
+        if not isinstance(filters, dict):
+            errors.append("search filters must be an object")
+            filters = {}
+        page = search.get("page")
+        if not isinstance(page, int) or isinstance(page, bool) or page < 1:
+            errors.append("search page must be a positive integer")
+            continue
+        if search.get("has_more") is not True:
             continue
         has_next_page = any(
             isinstance(candidate, dict)
             and candidate.get("window_id") == search.get("window_id")
             and candidate.get("phase") == search.get("phase")
             and candidate.get("query") == search.get("query")
-            and candidate.get("page") == 2
+            and candidate.get("dataset") == dataset
+            and candidate.get("filters", {}) == filters
+            and candidate.get("page") == page + 1
             for candidate in searches
         )
-        if not has_next_page and not search.get("pagination_skip_reason"):
+        pagination_stop_reason = search.get("pagination_stop_reason")
+        if not has_next_page and not pagination_stop_reason:
             errors.append(
-                "page 1 with has_more=true requires page 2 or "
-                "pagination_skip_reason"
+                "search page with has_more=true requires the next page or "
+                "pagination_stop_reason"
+            )
+        elif not has_next_page and pagination_stop_reason not in PAGINATION_STOP_REASONS:
+            errors.append(
+                "pagination_stop_reason must be one of: "
+                + ", ".join(sorted(PAGINATION_STOP_REASONS))
             )
 
     detail_counts = Counter(

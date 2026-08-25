@@ -7,15 +7,15 @@
       "files": [
         {
           "path": "references/newsmcp.md",
-          "sha256": "5ccb22ebcb1ae59d03276c819fe3736c0e9334b871e0ddc0f058fc77c9ad5482"
+          "sha256": "ca52f87c1baf6cee53898017c674c9a16e2516f35cf45f945c76d2090c86f023"
         },
         {
           "path": "references/output-contract.md",
-          "sha256": "3c0325842c1d075c3cd024df1759d512ccb49ac44e2fe54b1c336d9993626228"
+          "sha256": "d12992570de3954a142dbaf971bf1509381bef36c180d602d991dca05f9b2655"
         },
         {
           "path": "references/research-policy.md",
-          "sha256": "4a7ab7e3a6c2493639e408188d57cc07c150aab49768b6c68b3ef9cce771bdfb"
+          "sha256": "3b595619faad61064e5065f35b00f3d3f123dd37bea64986f42ec6f69349a6b7"
         },
         {
           "path": "scripts/plan_date_windows.py",
@@ -23,11 +23,11 @@
         },
         {
           "path": "scripts/validate_research_ledger.py",
-          "sha256": "2cc53c7040edff0c663f8b68989d5970282b17699cf0e65df9b92ed8b65a0322"
+          "sha256": "416fe5a0667ab09edba7876de4a9f444fe8cf1599ea194c7229a76c798db6b91"
         },
         {
           "path": "SKILL.md",
-          "sha256": "a74cc7e0c33b9dc53684f381d3c698379ac98fea5f5858924642951168a9268b"
+          "sha256": "9656254f3fbca4a0debb40c700e9f5b7f3bf95e67be4e424ac824f2f8e786973"
         }
       ]
     },
@@ -40,11 +40,11 @@
         },
         {
           "path": "references/quality-gates.md",
-          "sha256": "309705ab4950c2efb2711e5249d9c7eef6c9cf5d38e2e5da202af7ae52009413"
+          "sha256": "975d73ee34b3e23468ace3589e61ebd5ea8981523f50c9742a795d686e9f4d84"
         },
         {
           "path": "SKILL.md",
-          "sha256": "0c92952672c54ff447d96463e7185f6289ba6d03cf8d2093bf1a849be45b16a6"
+          "sha256": "312b9ba301bc3df8f28a9a03ad52d228d28aef10d7fe9f6a80c90e721bdf2373"
         }
       ]
     }

@@ -8,6 +8,26 @@ https://mcp.newsmcp.news/mcp
 
 Authentication uses NewsMCP OAuth. Never request or persist a manual token.
 
+The live MCP tool schema and descriptions are authoritative. If this reference conflicts with the connected server, follow the live contract and disclose any material capability gap.
+
+## `news_dataset_info`
+
+List public logical datasets or describe one dataset and its searchable metadata fields. Call it before choosing an unfamiliar dataset or when the requested country or corpus does not already map to a verified logical key. Omit `dataset` to list the catalog; pass an exact returned key for one detailed entry.
+
+This call does not consume search quota. Catalog keys and fields are live platform data; do not hardcode or infer them from a country name.
+
+## `news_dataset_values`
+
+List indexed values for one metadata field marked `values_discoverable` by `news_dataset_info`.
+
+Inputs:
+
+- `dataset`: exact logical dataset key.
+- `field`: exact discoverable field key.
+- `cursor`: opaque continuation cursor when the previous response has `has_more=true`.
+
+Use returned values exactly. Keep `dataset` and `field` unchanged while continuing a cursor. The server returns up to 50 values per call, and this call does not consume search quota. Do not call it for fields whose values are already known or not discoverable.
+
 ## `news_search`
 
 Search NewsMCP news and return Markdown candidates.
@@ -15,12 +35,16 @@ Search NewsMCP news and return Markdown candidates.
 Inputs:
 
 - `query`: non-empty search text.
+- `dataset`: exact logical key returned by `news_dataset_info`; omission uses the server default.
 - `page`: integer page number starting at 1.
 - `date_preset`: `recent_30d`, `recent_3m`, or `recent_6m`.
 - `filters.published_at.start`: inclusive `YYYY-MM-DD`.
 - `filters.published_at.end`: inclusive `YYYY-MM-DD`.
+- `filters.metadata`: dataset-specific fields combined with AND; values within one field use OR.
 
-For deep research, prefer explicit start and end filters. Both boundaries are required and one call may cover at most 180 days. If filters are omitted, the server applies `recent_30d` in `Asia/Seoul`.
+For deep research, pass an explicit dataset and prefer explicit start and end filters. Both date boundaries are required and one call may cover at most 180 days. If publication filters are omitted, the server applies `recent_30d` in `Asia/Seoul`. Use only metadata fields and exact values discovered for that dataset.
+
+Keep dataset and filters unchanged while paginating one query path. Each search consumes quota. If the server returns `search_quota_exceeded`, do not retry or reauthenticate before `resets_at`.
 
 The response contains:
 
@@ -35,7 +59,7 @@ The service page size is 30. `total_chunk_size` counts matched retrieval chunks,
 
 Fetch full article bodies for 1 to 10 `content_id` values.
 
-The response includes requested and returned counts, missing ids, and article Markdown containing metadata, summary, and body. Only returned bodies count toward the research quota.
+The response includes requested and returned counts, missing ids, and article Markdown containing metadata, summary, and body. Returned articles consume the account's detail usage, and repeated reads consume usage again. Reuse a Body already returned within the task, without imposing an article cap that would exclude material evidence.
 
 ## `newsboy://content/{content_id}`
 

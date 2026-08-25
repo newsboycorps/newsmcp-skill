@@ -31,6 +31,6 @@ Adapt the structure to the user's requested deliverable, but preserve these sema
 Use a compact note when scope or limitations matter:
 
 ```text
-Coverage: 2026-01-01 to 2026-06-30, 6 monthly windows, 18 full articles read.
+Coverage: dataset=<key>; filters=<material metadata or none>; 2026-01-01 to 2026-06-30; 6 monthly windows; 18 full articles read.
 Status: partial - one March query failed after retry.
 ```

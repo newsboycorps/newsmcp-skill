@@ -20,37 +20,52 @@ Ask the user when two plausible ranges would lead to materially different resear
 - Keep windows inclusive, contiguous, and non-overlapping.
 - Never exceed the MCP maximum of 180 days in one search call.
 
-## Evidence budget
+## Dataset and metadata scope
 
-Use `standard` unless the user asks for a quick scan or explicitly requests exhaustive research.
+Treat the NewsMCP dataset as part of the research brief, not as an incidental search option.
 
-| Mode | Full-body target | Search behavior | Suggested cap |
-|---|---|---|---|
-| quick | 3 to 5 relevant articles overall | One primary search; close only a blocking gap | 8 articles |
-| standard | 6 to 12 relevant articles overall | Search every window; close material gaps | 20 articles |
-| deep | 12 to 25 relevant articles overall | Broader variants and competing explanations | 40 articles |
+- Preserve an explicit dataset key supplied by the user or a verified handoff.
+- When the user describes a country, region, or corpus without a verified key, call `news_dataset_info` and choose from the live catalog. Do not guess a key or silently use the default dataset.
+- Use the combined dataset only when the request genuinely spans its member corpora. If dataset-specific metadata is needed, search the relevant member dataset instead and disclose the resulting scope.
+- Call `news_dataset_values` only for a selected field marked `values_discoverable` whose exact values are unknown. Record the returned value used in the search rather than a human paraphrase.
+- Keep dataset, publication boundaries, and metadata filters unchanged across pages of one query. If the brief requires multiple datasets or filter variants, treat each as a separate logged path.
 
-Targets guide selection; they are not mandatory minimums. Stop below the target when the question is already supported, and exceed it only when material disagreement or complexity justifies more reading. Do not count syndicated or substantially duplicate coverage as independent evidence.
+Metadata filters narrow retrieval; they do not replace semantic query coverage. Use a filter when it matches the requested scope. When adjacent categories could contain material results, add an unfiltered or complementary search path in the same dataset rather than assuming the catalog field is exhaustive.
 
-Each window with relevant results should contribute at least one full article. Record a `sparse_reason` when a window cannot contribute evidence. If adequate coverage would exceed the suggested cap, narrow the question or confirm a higher budget with the user.
+## Research depth
+
+Choose depth from the request rather than a default article budget:
+
+- Use a quick path only when the user explicitly asks for a quick scan or supplies a tight time, cost, or article boundary.
+- Use focused research for a narrow event, claim, entity, or comparison.
+- Use broad discovery for roundups, newsletters, trends, landscape reviews, and requests for all or recent relevant news. Broad discovery prioritizes recall across the scoped topic before editorial selection.
+
+Do not use a fixed full-Body target, search count, or suggested cap. The desired length of the answer or newsletter does not determine research depth. Do not count syndicated or substantially duplicate coverage as independent evidence, but retain distinct reporting that adds facts, limitations, or viewpoints.
+
+Each window with relevant results should contribute full-Body evidence. Record a `sparse_reason` when a window cannot contribute evidence.
 
 Evidence is sufficient when:
 
 - each material claim has full-body support;
 - consequential claims are corroborated when another independent report is available;
 - relevant windows are represented or marked sparse;
+- material facets and query families implied by the scope were searched;
+- relevant candidates that could change the synthesis or editorial selection were read in full;
 - important disagreement and uncertainty remain visible.
 
 ## Pagination
 
-Always inspect page 1. Inspect page 2 with unchanged filters when `has_more` is true and any of these hold:
+Always inspect page 1. When `has_more` is true and the current page contains relevant independent candidates, continue with the same dataset and unchanged filters into later pages. A draft already having enough articles is not a pagination stop reason.
 
-- evidence is not yet sufficient;
-- the candidate set is dominated by duplicates;
-- important viewpoints or periods are missing;
-- results are too ambiguous to select evidence.
+Stop a pagination path only when:
 
-Do not read page 2 merely to increase the result count after the evidence gate is already satisfied.
+- the server reports no more results;
+- additional pages consistently add no material independent candidates;
+- the remaining results are demonstrably outside the requested scope;
+- a repeated tool failure blocks the path; or
+- the user supplied a boundary that has been reached.
+
+Record the stop reason and the last page inspected. Apply the same rule beyond page 2 rather than treating page 2 as the end of pagination.
 
 ## Evidence strength
 
@@ -64,9 +79,9 @@ Prefer evidence that is:
 
 Publication date and event date are different fields. State which one is being used when chronology matters.
 
-## Second-pass requirements
+## Query expansion and second pass
 
-Derive second-pass searches from material first-pass gaps. Typical gap types:
+Plan complementary first-pass query families for broad requests, then derive follow-up searches from the candidate map. Useful triggers include:
 
 - newly identified entity or product;
 - claimed cause without direct support;
@@ -74,16 +89,16 @@ Derive second-pass searches from material first-pass gaps. Typical gap types:
 - policy, legal, or market mechanism needing context;
 - predecessor event required for comparison.
 
-Standard and deep research must assess evidence gaps, but a second-pass query is required only when a material gap exists. Limit each gap to one initial query and one reformulation. Record why no second pass was needed when the first pass already satisfies the evidence gate.
+Follow-up searches are not limited to gaps in already selected claims. Use them when they could uncover missing events, entities, terminology, perspectives, or source types within the requested scope. Do not impose a fixed query or reformulation limit; stop when continued expansion produces diminishing returns or the scope is exhausted.
 
 ## Stop reasons
 
 Use one of these explicit stop reasons:
 
-- `coverage_satisfied`: required windows, article bodies, and material gaps are covered.
-- `diminishing_returns`: two successive targeted searches add no material evidence after minimum coverage is met.
+- `coverage_satisfied`: required windows and material facets were searched, relevant candidates were read in full, and pagination paths were exhausted or closed with evidence-based reasons.
+- `diminishing_returns`: continued query expansion or pagination consistently adds no material independent candidates or evidence.
 - `source_scarcity`: reasonable variants and pagination still cannot meet coverage.
 - `tool_failure`: authentication, availability, or repeated MCP errors block required work.
-- `user_budget`: the user requested a tighter time or article budget.
+- `user_boundary`: an explicit user-supplied time, cost, or article boundary was reached.
 
 Only `coverage_satisfied` and `diminishing_returns` support a `complete` status. Other reasons require `partial` unless the missing evidence is immaterial to the answer.

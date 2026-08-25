@@ -28,8 +28,16 @@ class NewsletterSkillTest(unittest.TestCase):
     def test_skill_relies_on_live_theme_contract(self) -> None:
         self.assertIn("`newsletter_theme_search`", self.skill)
         self.assertIn("`newsletter_theme_get`", self.skill)
+        self.assertIn('Pass `language="ko"`', self.skill)
+        self.assertIn("does not set the language of the newsletter", self.skill)
         self.assertIn("Do not copy a theme's", self.skill)
         self.assertNotIn("line-style-newsletter", self.skill + self.gates)
+
+    def test_skill_uses_validate_only_flow_and_explicit_title(self) -> None:
+        self.assertIn("`newsletter_validate`", self.skill)
+        self.assertIn("title` as metadata independent from `source_mdx", self.skill)
+        self.assertIn("exact successfully validated `title`, `theme_key`, and `source_mdx`", self.skill)
+        self.assertIn("exact title, theme key, and source MDX", self.gates)
 
     def test_skill_requires_full_bodies_and_publication_approval(self) -> None:
         self.assertIn("Every included article must have a returned full Body", self.skill)
@@ -37,9 +45,18 @@ class NewsletterSkillTest(unittest.TestCase):
         self.assertIn("Never call `newsletter_create` merely to test", self.skill)
 
     def test_quality_gate_tracks_research_coverage(self) -> None:
-        for field in ("content_id", "public_url", "stop reason"):
+        for field in (
+            "content_id",
+            "public_url",
+            "stop reason",
+            "unique candidates",
+            "full-Body review",
+            "metadata filters",
+        ):
             self.assertIn(field, self.gates)
-        self.assertIn("do not impose a fixed search or article count", self.gates)
+        self.assertIn("Do not impose a fixed search or article count", self.gates)
+        self.assertIn("having enough articles for a draft is not evidence", self.skill)
+        self.assertIn("use broad discovery", self.gates)
 
     def test_openai_metadata_declares_newsmcp_dependency(self) -> None:
         self.assertIn('value: "newsmcp"', self.openai)

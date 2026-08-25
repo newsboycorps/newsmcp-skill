@@ -23,6 +23,13 @@ def load_module(name: str, path: Path) -> ModuleType:
 class DeepResearchSkillTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
+        cls.skill_text = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
+        cls.policy_text = (SKILL_ROOT / "references" / "research-policy.md").read_text(
+            encoding="utf-8"
+        )
+        cls.contract_text = (SKILL_ROOT / "references" / "newsmcp.md").read_text(
+            encoding="utf-8"
+        )
         cls.windows = load_module(
             "plan_date_windows",
             SKILL_ROOT / "scripts" / "plan_date_windows.py",
@@ -33,15 +40,26 @@ class DeepResearchSkillTest(unittest.TestCase):
         )
 
     def test_skill_uses_current_content_contract(self) -> None:
-        skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
-        contract = (SKILL_ROOT / "references" / "newsmcp.md").read_text(
-            encoding="utf-8"
-        )
+        skill = self.skill_text
+        contract = self.contract_text
 
         self.assertIn("name: newsmcp-deep-research", skill)
         self.assertIn("newsboy://content/{content_id}", skill)
         self.assertNotIn("news_id", skill + contract)
         self.assertNotIn("newsboy://news/", skill + contract)
+
+    def test_skill_discovers_and_preserves_dataset_scope(self) -> None:
+        combined = self.skill_text + self.policy_text + self.contract_text
+        for phrase in (
+            "`news_dataset_info`",
+            "`news_dataset_values`",
+            "Do not infer a dataset key from a country name",
+            "same dataset and unchanged filters",
+            "search_quota_exceeded",
+        ):
+            self.assertIn(phrase, combined)
+        self.assertIn("values_discoverable", self.contract_text)
+        self.assertIn("filters.metadata", self.contract_text)
 
     def test_skill_relative_markdown_links_exist(self) -> None:
         for relative_path in (
@@ -58,23 +76,87 @@ class DeepResearchSkillTest(unittest.TestCase):
         self.assertEqual(result[-1]["end"], "2026-04-05")
         self.assertEqual(len(result), 4)
 
-    def test_ledger_requires_page_two_or_skip_reason(self) -> None:
+    def test_research_depth_has_no_fixed_article_target_or_cap(self) -> None:
+        for phrase in (
+            "Full-body target",
+            "Suggested cap",
+            "Stop below the target",
+            "Do not read page 2",
+            "reformulate an unproductive query at most once",
+        ):
+            self.assertNotIn(phrase, self.skill_text + self.policy_text)
+        self.assertIn(
+            "desired length of the answer or newsletter does not determine research depth",
+            self.policy_text,
+        )
+
+    def test_broad_discovery_continues_pagination_and_full_body_review(self) -> None:
+        self.assertIn("Broad discovery prioritizes recall", self.policy_text)
+        self.assertIn(
+            "continue with the same dataset and unchanged filters into later pages",
+            self.policy_text,
+        )
+        self.assertIn(
+            "relevant candidates that could change the synthesis or editorial selection were read in full",
+            self.policy_text,
+        )
+
+    def test_ledger_requires_next_page_or_stop_reason(self) -> None:
         data = self.valid_ledger()
         data["searches"] = [data["searches"][0], data["searches"][2]]
 
         errors = self.ledger.validate(data)
 
         self.assertIn(
-            "page 1 with has_more=true requires page 2 or pagination_skip_reason",
+            "search page with has_more=true requires the next page or pagination_stop_reason",
             errors,
         )
 
-    def test_ledger_accepts_explicit_pagination_skip_reason(self) -> None:
+    def test_ledger_rejects_coverage_satisfied_as_pagination_stop(self) -> None:
         data = self.valid_ledger()
         data["searches"] = [data["searches"][0], data["searches"][2]]
-        data["searches"][0]["pagination_skip_reason"] = "coverage_satisfied"
+        data["searches"][0]["pagination_stop_reason"] = "coverage_satisfied"
+
+        self.assertIn(
+            "pagination_stop_reason must be one of: diminishing_returns, out_of_scope_results, tool_failure, user_boundary",
+            self.ledger.validate(data),
+        )
+
+    def test_ledger_accepts_evidence_based_pagination_stop(self) -> None:
+        data = self.valid_ledger()
+        data["searches"] = [data["searches"][0], data["searches"][2]]
+        data["searches"][0]["pagination_stop_reason"] = "diminishing_returns"
 
         self.assertEqual(self.ledger.validate(data), [])
+
+    def test_ledger_requires_explicit_dataset(self) -> None:
+        data = self.valid_ledger()
+        data["searches"][0].pop("dataset")
+
+        self.assertIn(
+            "each search requires an explicit dataset",
+            self.ledger.validate(data),
+        )
+
+    def test_ledger_does_not_accept_changed_dataset_as_next_page(self) -> None:
+        data = self.valid_ledger()
+        data["searches"][1]["dataset"] = "different-dataset"
+
+        self.assertIn(
+            "search page with has_more=true requires the next page or pagination_stop_reason",
+            self.ledger.validate(data),
+        )
+
+    def test_ledger_does_not_accept_changed_filters_as_next_page(self) -> None:
+        data = self.valid_ledger()
+        data["searches"][1]["filters"]["metadata"] = {
+            "feed_slug": ["different-value"]
+        }
+
+        self.assertIn(
+            "search page with has_more=true requires the next page or pagination_stop_reason",
+            self.ledger.validate(data),
+        )
 
     def test_ledger_does_not_force_second_pass_without_material_gap(self) -> None:
         data = self.valid_ledger()
@@ -103,6 +185,14 @@ class DeepResearchSkillTest(unittest.TestCase):
                     "window_id": "w01",
                     "phase": 1,
                     "query": "sample topic",
+                    "dataset": "sample-dataset",
+                    "filters": {
+                        "published_at": {
+                            "start": "2026-01-01",
+                            "end": "2026-01-31",
+                        },
+                        "metadata": {"sample_field": ["sample-value"]},
+                    },
                     "page": 1,
                     "has_more": True,
                 },
@@ -110,6 +200,14 @@ class DeepResearchSkillTest(unittest.TestCase):
                     "window_id": "w01",
                     "phase": 1,
                     "query": "sample topic",
+                    "dataset": "sample-dataset",
+                    "filters": {
+                        "published_at": {
+                            "start": "2026-01-01",
+                            "end": "2026-01-31",
+                        },
+                        "metadata": {"sample_field": ["sample-value"]},
+                    },
                     "page": 2,
                     "has_more": False,
                 },
@@ -117,6 +215,14 @@ class DeepResearchSkillTest(unittest.TestCase):
                     "window_id": "w01",
                     "phase": 2,
                     "query": "sample topic mechanism",
+                    "dataset": "sample-dataset",
+                    "filters": {
+                        "published_at": {
+                            "start": "2026-01-01",
+                            "end": "2026-01-31",
+                        },
+                        "metadata": {"sample_field": ["sample-value"]},
+                    },
                     "page": 1,
                     "has_more": False,
                 },
