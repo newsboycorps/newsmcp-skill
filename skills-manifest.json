@@ -15,7 +15,7 @@
         },
         {
           "path": "references/research-policy.md",
-          "sha256": "66f95e3c3a123046cb14d1a2f9f8a4b9d67feaef3113677c53fc654d7b4c3754"
+          "sha256": "4a7ab7e3a6c2493639e408188d57cc07c150aab49768b6c68b3ef9cce771bdfb"
         },
         {
           "path": "scripts/plan_date_windows.py",
@@ -23,11 +23,11 @@
         },
         {
           "path": "scripts/validate_research_ledger.py",
-          "sha256": "ea240f90b43371a2127472c3c1ad3424110f1fb4018ff371a7489963990dbd08"
+          "sha256": "2cc53c7040edff0c663f8b68989d5970282b17699cf0e65df9b92ed8b65a0322"
         },
         {
           "path": "SKILL.md",
-          "sha256": "870946bc7a0d46f59367641600806f5a6aefe5dbfd6b4e030a7691dcaec6939f"
+          "sha256": "a74cc7e0c33b9dc53684f381d3c698379ac98fea5f5858924642951168a9268b"
         }
       ]
     }

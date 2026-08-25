@@ -64,31 +64,30 @@ def validate(data: dict[str, Any]) -> list[str]:
         for item in articles
         if isinstance(item, dict) and item.get("full_text_read") is True
     )
-    minimum = data.get("min_details_per_window", 3)
-    if not isinstance(minimum, int) or minimum < 1:
-        errors.append("min_details_per_window must be a positive integer")
-        minimum = 3
-
     for window in windows:
         if not isinstance(window, dict):
             errors.append("each window must be an object")
             continue
         window_id = window.get("id")
-        if detail_counts[window_id] < minimum and not window.get("sparse_reason"):
+        if detail_counts[window_id] < 1 and not window.get("sparse_reason"):
             errors.append(
                 f"{window_id} has {detail_counts[window_id]} full articles; "
-                f"requires {minimum} or sparse_reason"
+                "requires one or sparse_reason"
             )
 
     for article in articles:
         if isinstance(article, dict) and article.get("full_text_read") is not True:
             errors.append(f"article {article.get('content_id')} lacks a full body")
 
+    material_gaps = data.get("material_gaps", [])
+    if not isinstance(material_gaps, list):
+        errors.append("material_gaps must be a list")
+        material_gaps = []
     has_second_pass = any(
         isinstance(item, dict) and item.get("phase") == 2 for item in searches
     )
-    if articles and not has_second_pass and data.get("status") == "complete":
-        errors.append("second-pass search is required after relevant first-pass articles")
+    if material_gaps and not has_second_pass and data.get("status") == "complete":
+        errors.append("material gaps require a second-pass search or partial status")
 
     status = data.get("status")
     stop_reason = data.get("stop_reason")

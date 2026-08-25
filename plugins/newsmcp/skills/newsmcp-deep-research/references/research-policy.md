@@ -20,25 +20,32 @@ Ask the user when two plausible ranges would lead to materially different resear
 - Keep windows inclusive, contiguous, and non-overlapping.
 - Never exceed the MCP maximum of 180 days in one search call.
 
-## Default depth
+## Evidence budget
 
 Use `standard` unless the user asks for a quick scan or explicitly requests exhaustive research.
 
-| Mode | Full-body quota | Search behavior | Suggested cap |
+| Mode | Full-body target | Search behavior | Suggested cap |
 |---|---|---|---|
-| quick | 3 relevant articles overall | One primary search; second pass only if ambiguity remains | 8 articles |
-| standard | 3 relevant articles per window and at least 8 overall | First and targeted second pass | 30 articles |
-| deep | 5 relevant articles per window and at least 15 overall | Multiple variants and targeted gap searches | 50 articles |
+| quick | 3 to 5 relevant articles overall | One primary search; close only a blocking gap | 8 articles |
+| standard | 6 to 12 relevant articles overall | Search every window; close material gaps | 20 articles |
+| deep | 12 to 25 relevant articles overall | Broader variants and competing explanations | 40 articles |
 
-The overall minimum does not override reality. If a window has fewer relevant articles after reasonable page and query expansion, record a `sparse_reason` and continue. Do not count syndicated or substantially duplicate coverage as independent evidence.
+Targets guide selection; they are not mandatory minimums. Stop below the target when the question is already supported, and exceed it only when material disagreement or complexity justifies more reading. Do not count syndicated or substantially duplicate coverage as independent evidence.
 
-If the per-window quota would exceed the suggested cap, tell the user what the requested period implies and either use two-month windows where allowed or confirm a higher budget.
+Each window with relevant results should contribute at least one full article. Record a `sparse_reason` when a window cannot contribute evidence. If adequate coverage would exceed the suggested cap, narrow the question or confirm a higher budget with the user.
+
+Evidence is sufficient when:
+
+- each material claim has full-body support;
+- consequential claims are corroborated when another independent report is available;
+- relevant windows are represented or marked sparse;
+- important disagreement and uncertainty remain visible.
 
 ## Pagination
 
 Always inspect page 1. Inspect page 2 with unchanged filters when `has_more` is true and any of these hold:
 
-- the full-body quota is not met;
+- evidence is not yet sufficient;
 - the candidate set is dominated by duplicates;
 - important viewpoints or periods are missing;
 - results are too ambiguous to select evidence.
@@ -67,7 +74,7 @@ Derive second-pass searches from material first-pass gaps. Typical gap types:
 - policy, legal, or market mechanism needing context;
 - predecessor event required for comparison.
 
-Run at least one second-pass query for standard and deep research. Limit each material gap to one initial query and one reformulation.
+Standard and deep research must assess evidence gaps, but a second-pass query is required only when a material gap exists. Limit each gap to one initial query and one reformulation. Record why no second pass was needed when the first pass already satisfies the evidence gate.
 
 ## Stop reasons
 

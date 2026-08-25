@@ -76,6 +76,24 @@ class DeepResearchSkillTest(unittest.TestCase):
 
         self.assertEqual(self.ledger.validate(data), [])
 
+    def test_ledger_does_not_force_second_pass_without_material_gap(self) -> None:
+        data = self.valid_ledger()
+        data["searches"] = data["searches"][:2]
+        data["material_gaps"] = []
+
+        self.assertEqual(self.ledger.validate(data), [])
+
+    def test_ledger_requires_second_pass_for_material_gap(self) -> None:
+        data = self.valid_ledger()
+        data["searches"] = data["searches"][:2]
+
+        errors = self.ledger.validate(data)
+
+        self.assertIn(
+            "material gaps require a second-pass search or partial status",
+            errors,
+        )
+
     @staticmethod
     def valid_ledger() -> dict[str, object]:
         return {
@@ -108,7 +126,7 @@ class DeepResearchSkillTest(unittest.TestCase):
                 {"window_id": "w01", "content_id": 102, "full_text_read": True},
                 {"window_id": "w01", "content_id": 103, "full_text_read": True},
             ],
-            "min_details_per_window": 3,
+            "material_gaps": ["sample topic mechanism"],
             "status": "complete",
             "stop_reason": "coverage_satisfied",
         }
