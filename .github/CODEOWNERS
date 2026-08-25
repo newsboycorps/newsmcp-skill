@@ -1,0 +1,6 @@
+# All changes require review from the repository owner.
+* @sehyeona
+
+# Protect repository policy and automation with an explicit rule.
+/.github/ @sehyeona
+/CONTRIBUTING.md @sehyeona
