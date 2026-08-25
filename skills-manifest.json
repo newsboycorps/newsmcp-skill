@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "packageVersion": "0.1.0-beta.2",
+  "packageVersion": "0.1.0-beta.3",
   "skills": [
     {
       "name": "newsmcp-deep-research",
@@ -44,7 +44,7 @@
         },
         {
           "path": "SKILL.md",
-          "sha256": "1d8cbeddbd863505124729b15fc37c901c42c318a899cd971e360a909aa1ed1d"
+          "sha256": "af6d4a8c595e19ae473f757685407756a1da9b0acb24ea5c918592cb24e6156e"
         }
       ]
     }

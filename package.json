@@ -1,6 +1,6 @@
 {
   "name": "@newsboycorps/newsmcp",
-  "version": "0.1.0-beta.2",
+  "version": "0.1.0-beta.3",
   "description": "Install NewsMCP skills and connect supported agent clients.",
   "license": "MIT",
   "repository": {

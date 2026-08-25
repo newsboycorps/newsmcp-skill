@@ -23,7 +23,7 @@ For research-backed work, read [the newsletter quality gates](references/quality
 
 ### 1. Set the brief
 
-Resolve the audience, purpose, topic, country corpus or logical dataset, inclusive date range, language, and requested outcome: draft, preview, revision, or publication. Ask only when a missing choice would materially change the research or publication target.
+Resolve the audience, purpose, topic, country corpus or logical dataset, inclusive date range, reader-facing newsletter language, and requested outcome: draft, preview, revision, or publication. Ask only when a missing choice would materially change the research or publication target.
 
 ### 2. Check the evidence handoff
 
@@ -35,7 +35,7 @@ For roundups, newsletters, topic discovery, and requests for all or recent relev
 
 Call `newsletter_theme_search`, then `newsletter_theme_get` for the selected `theme_key` before authoring. Follow the returned guide and record its version.
 
-Theme documentation supports `en` (default) and `ko`. Pass the same `language` to both theme tools. This setting does not determine the language of the newsletter itself.
+Theme documentation supports `en` (default) and `ko`. Use the same documentation language for both theme calls. It is independent of the reader-facing newsletter language.
 
 Do not copy a theme's typography, layout, image count, MDX shape, or validator rules into this skill. The live theme guide wins over an older draft or local preview.
 

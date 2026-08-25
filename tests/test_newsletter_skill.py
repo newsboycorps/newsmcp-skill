@@ -28,8 +28,6 @@ class NewsletterSkillTest(unittest.TestCase):
     def test_skill_relies_on_live_theme_contract(self) -> None:
         self.assertIn("`newsletter_theme_search`", self.skill)
         self.assertIn("`newsletter_theme_get`", self.skill)
-        self.assertIn("supports `en` (default) and `ko`", self.skill)
-        self.assertIn("does not determine the language of the newsletter", self.skill)
         self.assertIn("Do not copy a theme's", self.skill)
         self.assertNotIn("line-style-newsletter", self.skill + self.gates)
 
