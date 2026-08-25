@@ -35,7 +35,7 @@ For roundups, newsletters, topic discovery, and requests for all or recent relev
 
 Call `newsletter_theme_search`, then `newsletter_theme_get` for the selected `theme_key` before authoring. Follow the returned guide and record its version.
 
-Theme documentation is returned in English by default. Pass `language="ko"` to both theme tools only when the user asks to inspect the authoring guidance in Korean. This choice does not set the language of the newsletter itself.
+Theme documentation supports `en` (default) and `ko`. Pass the same `language` to both theme tools. This setting does not determine the language of the newsletter itself.
 
 Do not copy a theme's typography, layout, image count, MDX shape, or validator rules into this skill. The live theme guide wins over an older draft or local preview.
 
