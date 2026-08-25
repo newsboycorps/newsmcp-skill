@@ -29,15 +29,28 @@ export class ClaudeCodeAdapter implements ClientAdapter {
         detail: `Claude Code already has an MCP server named ${MCP_NAME} with a different URL.`,
       };
     }
-    const match = named ?? equivalent;
-    if (match === undefined) {
+    if (named !== undefined) {
+      return {
+        state: "matching",
+        name: named.name,
+        authenticated: parseAuthentication(named.result.stdout),
+      };
+    }
+    if (equivalent === undefined) {
       return { state: "absent", name: MCP_NAME, authenticated: false };
     }
     return {
-      state: "matching",
-      name: match.name,
-      authenticated: parseAuthentication(match.result.stdout),
+      state: "rename_required",
+      name: equivalent.name,
+      authenticated: parseAuthentication(equivalent.result.stdout),
     };
+  }
+
+  async remove(runner: ProcessRunner, name: string): Promise<void> {
+    const result = await runner.run(this.executable, ["mcp", "remove", name]);
+    if (result.status !== 0) {
+      throw new Error(`Claude Code failed to remove the previous MCP registration: ${name}.`);
+    }
   }
 
   async register(runner: ProcessRunner): Promise<void> {

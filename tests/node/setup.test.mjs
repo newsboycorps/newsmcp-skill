@@ -42,6 +42,10 @@ class CodexRunner {
       });
       return success();
     }
+    if (args[0] === "mcp" && args[1] === "remove") {
+      this.entries = this.entries.filter(({ name }) => name !== args[2]);
+      return success();
+    }
     if (args[0] === "mcp" && args[1] === "login") {
       const entry = this.entries.find(({ name }) => name === args[2]);
       assert.ok(entry);
@@ -53,9 +57,8 @@ class CodexRunner {
 }
 
 class ClaudeRunner {
-  constructor() {
-    this.registered = false;
-    this.authenticated = false;
+  constructor(entries = []) {
+    this.entries = structuredClone(entries);
     this.calls = [];
   }
 
@@ -64,21 +67,39 @@ class ClaudeRunner {
     assert.equal(command, "claude");
 
     if (args.join(" ") === "mcp list") {
-      return success(this.registered ? "newsmcp: connected\n" : "No MCP servers configured.\n");
+      return success(
+        this.entries.length === 0
+          ? "No MCP servers configured.\n"
+          : this.entries.map(({ name }) => `${name}: configured`).join("\n") + "\n",
+      );
     }
     if (args[0] === "mcp" && args[1] === "get") {
+      const entry = this.entries.find(({ name }) => name === args[2]);
+      if (entry === undefined) {
+        return failure("MCP server not found");
+      }
       return success(
-        `newsmcp\n  URL: ${MCP_URL}\n  Status: ${
-          this.authenticated ? "Connected" : "Authentication required"
+        `${entry.name}\n  URL: ${entry.url}\n  Status: ${
+          entry.authenticated ? "Connected" : "Authentication required"
         }\n`,
       );
     }
     if (args[0] === "mcp" && args[1] === "add") {
-      this.registered = true;
+      this.entries.push({
+        name: args[6],
+        url: args[7],
+        authenticated: false,
+      });
+      return success();
+    }
+    if (args[0] === "mcp" && args[1] === "remove") {
+      this.entries = this.entries.filter(({ name }) => name !== args[2]);
       return success();
     }
     if (args[0] === "mcp" && args[1] === "login") {
-      this.authenticated = true;
+      const entry = this.entries.find(({ name }) => name === args.at(-1));
+      assert.ok(entry);
+      entry.authenticated = true;
       return success();
     }
     return failure("unexpected mock command");
@@ -99,6 +120,10 @@ test("Codex setup installs once and is idempotent on rerun", async (context) => 
   );
   assert.equal(countCalls(runner, "add"), 1);
   assert.equal(countCalls(runner, "login"), 1);
+  assert.deepEqual(
+    runner.calls.find(({ args }) => args[1] === "login")?.args,
+    ["mcp", "login", "newsmcp"],
+  );
 
   const skillPath = path.join(home, ".codex", "skills", "newsmcp-deep-research", "SKILL.md");
   const before = await readFile(skillPath, "utf8");
@@ -121,13 +146,14 @@ test("Codex setup installs once and is idempotent on rerun", async (context) => 
   assert.equal(countCalls(runner, "login"), 1);
   assert.equal(await readFile(skillPath, "utf8"), before);
   assert.match(second.stdout.join("\n"), /already up to date/);
+  assert.match(second.stdout.join("\n"), /Restart Codex/);
 });
 
-test("setup reuses a matching endpoint registered under another name", async (context) => {
+test("setup migrates an equivalent endpoint to the NewsMCP service name", async (context) => {
   const home = await temporaryHome(context);
   const runner = new CodexRunner([
     {
-      name: "newsboy",
+      name: "legacy-alias",
       auth_status: "o_auth",
       transport: { type: "streamable_http", url: MCP_URL },
     },
@@ -141,9 +167,39 @@ test("setup reuses a matching endpoint registered under another name", async (co
     }),
     0,
   );
-  assert.equal(countCalls(runner, "add"), 0);
-  assert.equal(countCalls(runner, "login"), 0);
-  assert.match(capture.stdout.join("\n"), /registered as newsboy/);
+  assert.equal(countCalls(runner, "add"), 1);
+  assert.equal(countCalls(runner, "remove"), 1);
+  assert.equal(countCalls(runner, "login"), 1);
+  assert.deepEqual(runner.entries.map(({ name }) => name), ["newsmcp"]);
+  assert.match(capture.stdout.join("\n"), /migrated to newsmcp/);
+});
+
+test("an older OAuth contract triggers native reauthentication", async (context) => {
+  const home = await temporaryHome(context);
+  const runner = new CodexRunner();
+
+  assert.equal(
+    await run(["setup", "--client", "codex"], captureOutput().output, {
+      env: isolatedEnv(home),
+      runner,
+    }),
+    0,
+  );
+  const receiptPath = path.join(home, ".codex", ".newsmcp", "installation.json");
+  const receipt = JSON.parse(await readFile(receiptPath, "utf8"));
+  delete receipt.mcp.oauthContractVersion;
+  await writeFile(receiptPath, `${JSON.stringify(receipt, null, 2)}\n`);
+
+  assert.equal(
+    await run(["setup", "--client", "codex"], captureOutput().output, {
+      env: isolatedEnv(home),
+      runner,
+    }),
+    0,
+  );
+  assert.equal(countCalls(runner, "login"), 2);
+  const updated = JSON.parse(await readFile(receiptPath, "utf8"));
+  assert.equal(updated.mcp.oauthContractVersion, 2);
 });
 
 test("MCP name conflict fails before writing skill state", async (context) => {
@@ -234,6 +290,26 @@ test("Claude Code setup registers and authenticates through its native CLI", asy
   const login = runner.calls.find(({ args }) => args[1] === "login");
   assert.deepEqual(login?.args, ["mcp", "login", "--no-browser", "newsmcp"]);
   assert.equal(login?.interactive, true);
+  assert.match(capture.stdout.join("\n"), /Restart Claude Code/);
+});
+
+test("Claude Code migrates an equivalent endpoint and starts fresh OAuth", async (context) => {
+  const home = await temporaryHome(context);
+  const runner = new ClaudeRunner([
+    { name: "legacy-alias", url: MCP_URL, authenticated: true },
+  ]);
+
+  assert.equal(
+    await run(["setup", "--client", "claude-code"], captureOutput().output, {
+      env: isolatedEnv(home),
+      runner,
+    }),
+    0,
+  );
+  assert.equal(countCalls(runner, "add"), 1);
+  assert.equal(countCalls(runner, "remove"), 1);
+  assert.equal(countCalls(runner, "login"), 1);
+  assert.deepEqual(runner.entries.map(({ name }) => name), ["newsmcp"]);
 });
 
 function isolatedEnv(home) {

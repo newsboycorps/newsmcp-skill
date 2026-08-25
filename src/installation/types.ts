@@ -27,6 +27,7 @@ export interface InstallationReceipt {
     url: string;
     registrationOwned: boolean;
     oauthCompleted: boolean;
+    oauthContractVersion?: number;
   };
 }
 

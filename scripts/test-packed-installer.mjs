@@ -63,16 +63,26 @@ try {
   if (state.addCount !== 1 || state.loginCount !== 1 || state.authenticated !== true) {
     throw new Error(`Packed setup was not idempotent: ${JSON.stringify(state)}`);
   }
+  if (state.name !== "newsmcp") {
+    throw new Error(`Packed setup used an unexpected MCP service name: ${state.name}`);
+  }
+  if (state.loginArgs.some((argument) => argument === "--scopes")) {
+    throw new Error(`Packed setup passed explicit OAuth scopes: ${JSON.stringify(state.loginArgs)}`);
+  }
   await readFile(
     path.join(home, ".codex", "skills", "newsmcp-deep-research", "SKILL.md"),
     "utf8",
   );
-  const receipt = await readFile(
+  const receiptSource = await readFile(
     path.join(home, ".codex", ".newsmcp", "installation.json"),
     "utf8",
   );
-  if (/access[_-]?token|refresh[_-]?token/i.test(receipt)) {
+  if (/access[_-]?token|refresh[_-]?token/i.test(receiptSource)) {
     throw new Error("Installation receipt contains token material.");
+  }
+  const receipt = JSON.parse(receiptSource);
+  if (receipt.mcp.name !== "newsmcp" || receipt.mcp.oauthContractVersion !== 2) {
+    throw new Error(`Installation receipt has the wrong MCP contract: ${receiptSource}`);
   }
   console.log("Packed installer completed two idempotent setup runs in an isolated home.");
 } finally {
@@ -103,20 +113,29 @@ async function writeFakeCodex(target) {
 import { readFileSync, writeFileSync } from "node:fs";
 
 const statePath = process.env.FAKE_CODEX_STATE;
-let state = { registered: false, authenticated: false, addCount: 0, loginCount: 0 };
+let state = {
+  registered: false,
+  authenticated: false,
+  addCount: 0,
+  loginCount: 0,
+  name: null,
+  loginArgs: []
+};
 try { state = JSON.parse(readFileSync(statePath, "utf8")); } catch {}
 const args = process.argv.slice(2);
 if (args.join(" ") === "mcp list --json") {
   console.log(JSON.stringify(state.registered ? [{
-    name: "newsmcp",
+    name: state.name,
     auth_status: state.authenticated ? "o_auth" : "not_logged_in",
     transport: { type: "streamable_http", url: "https://mcp.newsmcp.news/mcp" }
   }] : []));
 } else if (args[0] === "mcp" && args[1] === "add") {
   state.registered = true;
+  state.name = args[2];
   state.addCount += 1;
 } else if (args[0] === "mcp" && args[1] === "login") {
   state.authenticated = true;
+  state.loginArgs = args;
   state.loginCount += 1;
 } else {
   process.exitCode = 2;

@@ -59,7 +59,9 @@ function isInstallationReceipt(value: unknown): value is InstallationReceipt {
     typeof mcp.name === "string" &&
     typeof mcp.url === "string" &&
     typeof mcp.registrationOwned === "boolean" &&
-    typeof mcp.oauthCompleted === "boolean"
+    typeof mcp.oauthCompleted === "boolean" &&
+    (mcp.oauthContractVersion === undefined ||
+      typeof mcp.oauthContractVersion === "number")
   );
 }
 

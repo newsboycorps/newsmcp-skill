@@ -7,7 +7,9 @@ articles, and produce evidence-based results.
 ## Install
 
 Requires Node.js 20 or later. The installer adds the skills, connects NewsMCP,
-and delegates OAuth authentication to the selected client.
+and delegates OAuth authentication to the selected client. Users only complete
+the normal NewsMCP sign-in and consent flow. The installer does not ask users to
+choose scopes; the NewsMCP OAuth server applies the service's default permissions.
 
 ```bash
 # Codex
@@ -18,6 +20,11 @@ npx --yes @newsboycorps/newsmcp@latest setup --client claude-code
 ```
 
 Run the same command again to update.
+
+The installer registers the service as `newsmcp`. An existing registration for
+the same endpoint under another name is migrated automatically, followed by a
+fresh OAuth login so the current default permissions are applied. Restart the
+selected agent client after setup before using newly installed tools.
 
 ## Included skill
 

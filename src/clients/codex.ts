@@ -1,6 +1,5 @@
 import {
   MCP_NAME,
-  MCP_SCOPES,
   MCP_URL,
   type ClientName,
 } from "../constants.js";
@@ -39,15 +38,28 @@ export class CodexAdapter implements ClientAdapter {
         detail: `Codex already has an MCP server named ${MCP_NAME} with a different URL.`,
       };
     }
-    const match = named ?? equivalent;
-    if (match === undefined || typeof match.name !== "string") {
+    if (named !== undefined && typeof named.name === "string") {
+      return {
+        state: "matching",
+        name: named.name,
+        authenticated: named.auth_status === "o_auth",
+      };
+    }
+    if (equivalent === undefined || typeof equivalent.name !== "string") {
       return { state: "absent", name: MCP_NAME, authenticated: false };
     }
     return {
-      state: "matching",
-      name: match.name,
-      authenticated: match.auth_status === "o_auth",
+      state: "rename_required",
+      name: equivalent.name,
+      authenticated: equivalent.auth_status === "o_auth",
     };
+  }
+
+  async remove(runner: ProcessRunner, name: string): Promise<void> {
+    const result = await runner.run(this.executable, ["mcp", "remove", name]);
+    if (result.status !== 0) {
+      throw new Error(`Codex failed to remove the previous MCP registration: ${name}.`);
+    }
   }
 
   async register(runner: ProcessRunner): Promise<void> {
@@ -72,13 +84,7 @@ export class CodexAdapter implements ClientAdapter {
     }
     const result = await runner.run(
       this.executable,
-      [
-        "mcp",
-        "login",
-        options.name,
-        "--scopes",
-        MCP_SCOPES.join(","),
-      ],
+      ["mcp", "login", options.name],
       { interactive: true },
     );
     if (result.status !== 0) {

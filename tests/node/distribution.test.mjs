@@ -31,6 +31,19 @@ test("plugin manifests share package version and MCP endpoint", async () => {
   assert.equal(JSON.stringify({ claude, codex, mcp }).includes(root), false);
 });
 
+test("installer source uses only the NewsMCP service identity", async () => {
+  const sourceFiles = [
+    "src/constants.ts",
+    "src/clients/codex.ts",
+    "src/clients/claude-code.ts",
+    "src/commands/setup.ts",
+  ];
+  for (const sourceFile of sourceFiles) {
+    const source = await readFile(path.join(root, sourceFile), "utf8");
+    assert.doesNotMatch(source, /newsboy/i, sourceFile);
+  }
+});
+
 async function readJson(relativePath) {
   return JSON.parse(await readFile(path.join(root, relativePath), "utf8"));
 }

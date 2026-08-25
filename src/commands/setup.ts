@@ -1,5 +1,5 @@
 import type { ClientName } from "../constants.js";
-import { MCP_URL } from "../constants.js";
+import { MCP_NAME, MCP_URL, OAUTH_CONTRACT_VERSION } from "../constants.js";
 import { createClientAdapter } from "../clients/index.js";
 import { installBundledSkills, readBundledManifest } from "../installation/installer.js";
 import { readReceipt, writeReceipt } from "../installation/receipt.js";
@@ -50,6 +50,8 @@ export async function setup(
   }
 
   const previousReceipt = await readReceipt(paths.stateRoot);
+  const oauthContractChanged =
+    previousReceipt?.mcp.oauthContractVersion !== OAUTH_CONTRACT_VERSION;
   const skillResult = await installBundledSkills({
     skillsRoot: paths.skillsRoot,
     stateRoot: paths.stateRoot,
@@ -75,9 +77,13 @@ export async function setup(
         previousReceipt?.mcp.registrationOwned === true &&
         previousReceipt.mcp.url === MCP_URL,
       oauthCompleted:
-        initialInspection.authenticated === true ||
-        (initialInspection.authenticated === undefined &&
-          previousReceipt?.mcp.oauthCompleted === true),
+        !oauthContractChanged &&
+        (initialInspection.authenticated === true ||
+          (initialInspection.authenticated === undefined &&
+            previousReceipt?.mcp.oauthCompleted === true)),
+      oauthContractVersion: oauthContractChanged
+        ? 0
+        : OAUTH_CONTRACT_VERSION,
     },
   };
   await writeReceipt(paths.stateRoot, receipt);
@@ -99,13 +105,33 @@ export async function setup(
     };
     await writeReceipt(paths.stateRoot, receipt);
     output.log("MCP endpoint registered.");
+  } else if (inspection.state === "rename_required") {
+    const previousName = inspection.name;
+    await adapter.register(runner);
+    await adapter.remove(runner, previousName);
+    inspection = await adapter.inspect(runner);
+    if (inspection.state !== "matching" || inspection.name !== MCP_NAME) {
+      throw new Error("NewsMCP registration could not be verified after name migration.");
+    }
+    receipt = {
+      ...receipt,
+      mcp: {
+        ...receipt.mcp,
+        name: MCP_NAME,
+        registrationOwned: true,
+        oauthCompleted: false,
+      },
+    };
+    await writeReceipt(paths.stateRoot, receipt);
+    output.log(`MCP endpoint registration migrated to ${MCP_NAME}.`);
   } else {
     output.log(`MCP endpoint already registered as ${inspection.name}.`);
   }
 
   const shouldLogin =
     options.reauthenticate ||
-    inspection.authenticated === false ||
+    oauthContractChanged ||
+    inspection.authenticated !== true ||
     receipt.mcp.oauthCompleted !== true;
   if (shouldLogin) {
     output.log(
@@ -117,7 +143,12 @@ export async function setup(
     });
     receipt = {
       ...receipt,
-      mcp: { ...receipt.mcp, oauthCompleted: true },
+      mcp: {
+        ...receipt.mcp,
+        name: MCP_NAME,
+        oauthCompleted: true,
+        oauthContractVersion: OAUTH_CONTRACT_VERSION,
+      },
     };
     await writeReceipt(paths.stateRoot, receipt);
     output.log("OAuth login completed.");
@@ -126,6 +157,9 @@ export async function setup(
   }
 
   output.log(`NewsMCP ${packageVersion} setup is complete.`);
+  output.log(
+    `Restart ${displayClient(options.client)} before using newly installed or updated MCP tools.`,
+  );
 }
 
 function displayClient(client: ClientName): string {
